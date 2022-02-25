@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import {  interval, Observable, Subject, Subscriber, Subscription } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { interval, Observable, Subject, Subscriber, Subscription } from 'rxjs';
+import { takeUntil, map, filter } from 'rxjs/operators';
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
@@ -32,12 +32,16 @@ export class HomeComponent implements OnInit, OnDestroy {
       }, 1000);
     });
 
-    customIntervalObservable.pipe(takeUntil(this._unsubscribe))
-                            .subscribe(
-      data => { console.log(data); }, // 0 1 2 ...
-      error => { console.log(error) }, // 0 1 2 3 4 err ...
-      () => { console.log('Completed') } // Completed
-    );
+    customIntervalObservable.pipe(
+                              filter((data: number) => data > 0), // фильтрация
+                              map((data: number) => `Round ${data + 1}`), // переобразование
+                              takeUntil(this._unsubscribe) // условия
+
+                            ).subscribe(
+                                      data => { console.log(data); }, // 
+                                      error => { console.log(error) }, // ...
+                                      () => { console.log('Completed') } // Round 2 Round 3 Completed 
+                                      );
   }
 
   ngOnDestroy(): void {
